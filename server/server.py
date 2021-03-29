@@ -16,12 +16,15 @@ class Server:
         else:
             sys.exit()
         self.list1 = []
+        self.list_to_send = []
         self.list1.append(self.socket)
         self.event_loop()
 
     def handle(self, new_socket):
         client, address = new_socket.accept()
         print(f'Conn from |{address[0]}:{address[1]}|')
+        self.list1.append(client)
+        self.list_to_send.append(client)
         threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
 
     def msg(self, client):
@@ -29,7 +32,15 @@ class Server:
             msg = client.recv(1024).decode('utf-8')
             if not msg:
                 break
-            client.sendall(bytes(msg, 'utf-8'))
+            print(msg)
+            for i in self.list1:
+                if i != self.socket and i != client:
+                    try:
+                        i.send(bytes(msg, 'utf-8'))
+                    except:
+                        i.close()
+                        self.list1.remove(i)
+
 
     def event_loop(self):
         while True:
