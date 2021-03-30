@@ -1,7 +1,12 @@
 import socket
 import threading
 import select
+import json
 import sys
+import pickle
+import sqlite3
+from create_table import create_db
+from json_insertion import insert_into_db
 
 class Server:
     def __init__(self, ip, port):
@@ -11,21 +16,52 @@ class Server:
         self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.socket.bind((self.ip, self.port))
         self.socket.listen(0)
+        create_db()
         if self.socket:
             print('[SERVER STARTED]')
         else:
             sys.exit()
         self.list1 = []
-        self.list_to_send = []
         self.list1.append(self.socket)
         self.event_loop()
+
+    def register_or_login(self, client):
+        client.send(bytes('Register - 1 | Login - 2', 'utf-8'))
+        msg = client.recv(1024).decode('utf-8')
+        if msg == '1':
+            self.register(client)
+        elif msg == '2':
+            self.login(client)
+
+    def register(self, client):
+        msg = client.recv(1024)
+        res = pickle.loads(msg)
+
+        register_validation = sqlite3.connect('TermChat.db')
+        cursor = register_validation.cursor()
+
+        cursor.execute('SELECT login FROM TermChat WHERE login = ?', (res['login'], ))
+
+        if cursor.fetchall():
+            client.send(bytes('User with this login exists. Try another login.', 'utf-8'))
+            self.register(client)
+        else:
+            with open('register.json', 'w') as f:
+                json.dump(res, f)
+
+            client.send(bytes('You have been successfully registered!', 'utf-8'))
+            insert_into_db(res)
+            threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
+
+    def login(self, client):
+        print('login function')
 
     def handle(self, new_socket):
         client, address = new_socket.accept()
         print(f'Conn from |{address[0]}:{address[1]}|')
         self.list1.append(client)
-        self.list_to_send.append(client)
-        threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
+        threading.Thread(target=self.register_or_login, args=(client, ), daemon=True).start()
+#        threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
 
     def msg(self, client):
         while True:
