@@ -4,85 +4,81 @@ import sys
 import pickle
 
 class Client:
-    def __init__(self, ip, port):
-        self.ip = ip
-        self.port = port
-        self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.socket.connect((self.ip, self.port))
-        self.json_register = {}
-        self.json_login = {}
-        self.register_or_login()
+	def __init__(self, ip, port):
+		self.ip = ip
+		self.port = port
+		self.socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+		self.socket.connect((self.ip, self.port))
+		self.json_register = {}
+		self.json_login = {}
+		self.register_or_login()
 
-    def register(self):
-        print('|||REGISTER|||')
-        self.json_register['login'] = input('Enter your login: ')
-        self.json_register['password'] = input('Enter your password: ')
+	def register_or_login(self):
+		msg = self.socket.recv(1024).decode('utf-8')
+		print(msg)
 
-        global name
-        name = self.json_register['login']
+		answer = input('(1/2): ')
+		self.socket.send(bytes(answer, 'utf-8'))
+		if answer == '1':
+			self.register()
+		elif answer == '2':
+			self.login()
 
-        res = pickle.dumps(self.json_register)
+	def register(self):
+		print('|||REGISTER|||')
+		self.json_register['login'] = input('Enter your login: ')
+		self.json_register['password'] = input('Enter your password: ')
 
-        self.socket.send(res)
+		global name
+		name = self.json_register['login']
 
-        msg = self.socket.recv(1024).decode('utf-8')
+		res = pickle.dumps(self.json_register)
+		self.socket.send(res)
 
-        if msg == 'User with this login exists. Try another login.':
-            print(msg)
-            self.register()
-        elif msg == 'You have been successfully registered!':
-            print(msg)
-            # msg1 = self.socket.recv(1024).decode('utf-8')
-            # print(msg1)
-            threading.Thread(target=self.msg_recv, daemon=True).start()
-            self.msg_send()
+		msg = self.socket.recv(1024).decode('utf-8')
 
-    def login(self):
-        print('|||LOGIN|||')
-        self.json_login['login'] = input('Enter your login: ')
-        self.json_login['password'] = input('Enter your password: ')
+		if msg == 'User with this login exists. Try another login.':
+			print(msg)
+			self.register()
+		elif msg == 'You have been successfully registered!':
+			print(msg)
+			threading.Thread(target=self.msg_recv, daemon=True).start()
+			self.msg_send()
 
-        res = pickle.dumps(self.json_login)
+	def login(self):
+		print('|||LOGIN|||')
+		self.json_login['login'] = input('Enter your login: ')
+		self.json_login['password'] = input('Enter your password: ')
 
-        self.socket.send(res)
+		global name
+		name = self.json_login['login']
 
-        msg = self.socket.recv(1024).decode('utf-8')
+		res = pickle.dumps(self.json_login)
+		self.socket.send(res)
 
-        if msg == 'Incorrect login of password. Try again.':
-            print(msg)
-            self.login()
-        elif msg == 'You have been successfully logged in!':
-            print(msg)
-            threading.Thread(target=self.msg_recv, daemon=True).start()
-            self.msg_send()
+		msg = self.socket.recv(1024).decode('utf-8')
 
-    def register_or_login(self):
-        msg = self.socket.recv(1024).decode('utf-8')
-        print(msg)
+		if msg:
+			print(msg)
+			threading.Thread(target=self.msg_recv, daemon=True).start()
+			self.msg_send()
 
-        answer = input('(1/2): ')
-        self.socket.send(bytes(answer, 'utf-8'))
-        if answer == '1':
-            self.register()
-        elif answer == '2':
-            self.login()
+	def msg_recv(self):
+		while True:
+			try:
+				msg = self.socket.recv(1024).decode('utf-8')
+				if not msg:
+					break
+				print(msg)
+			except:
+				break
 
-    def msg_recv(self):
-        while True:
-            try:
-                msg = self.socket.recv(1024).decode('utf-8')
-                if not msg:
-                    break
-                print(msg)
-            except:
-                break
-
-    def msg_send(self):
-        while True:
-            try:
-                self.socket.send(bytes(name + ': ' + input(''), 'utf-8'))
-            except:
-                break
+	def msg_send(self):
+		while True:
+			try:
+				self.socket.send(bytes(name + ': ' + input(''), 'utf-8'))
+			except:
+				break
 
 
 c1 = Client('', 8000)
