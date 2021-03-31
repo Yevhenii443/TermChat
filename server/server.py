@@ -51,10 +51,25 @@ class Server:
 
             client.send(bytes('You have been successfully registered!', 'utf-8'))
             insert_into_db(res)
+            # client.send(bytes('NOW YOU CAN TYPE HERE (BELOW)', 'utf-8'))
             threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
 
     def login(self, client):
-        print('login function')
+        msg = client.recv(1024)
+        res = pickle.loads(msg)
+
+        login_validation = sqlite3.connect('TermChat.db')
+        cursor = login_validation.cursor()
+
+        cursor.execute('SELECT * FROM TermChat WHERE login = ? AND password = ?', (res['login'], res['password']))
+
+        if cursor.fetchall():
+            client.send(bytes('You have been successfully logged in!', 'utf-8'))
+            threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
+        else:
+            client.send(bytes('Incorrect login of password. Try again.', 'utf-8'))
+            self.login(client)
+
 
     def handle(self, new_socket):
         client, address = new_socket.accept()

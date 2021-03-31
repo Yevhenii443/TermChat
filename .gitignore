@@ -1,2 +1,4 @@
 .DS_Store
-*.swq
+*.swp
+*.json
+__pycache__
