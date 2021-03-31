@@ -2,6 +2,7 @@ import socket
 import threading
 import sys
 import pickle
+import pyfiglet
 
 class Client:
 	def __init__(self, ip, port):
@@ -14,20 +15,27 @@ class Client:
 		self.register_or_login()
 
 	def register_or_login(self):
-		msg = self.socket.recv(1024).decode('utf-8')
-		print(msg)
+		result = pyfiglet.figlet_format("TermChat", font = "smslant")
+		print(result)
 
-		answer = input('(1/2): ')
+		msg = self.socket.recv(1024).decode('utf-8')
+		print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+		print(msg)
+		print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+
+		answer = input('    |ᛞ| R |ᛞ| ᛟᚱ |ᛞ| L |ᛞ|: ')
 		self.socket.send(bytes(answer, 'utf-8'))
-		if answer == '1':
+		if answer == 'R':
 			self.register()
-		elif answer == '2':
+		elif answer == 'L':
 			self.login()
 
 	def register(self):
-		print('|||REGISTER|||')
-		self.json_register['login'] = input('Enter your login: ')
-		self.json_register['password'] = input('Enter your password: ')
+		print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+		print('	     |ᛟ| REGISTER |ᛟ|')
+		print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+		self.json_register['login'] = input('    |ᛟ| Enter your login |ᛟ|: ')
+		self.json_register['password'] = input('    |ᛟ| Enter your password |ᛟ|: ')
 
 		global name
 		name = self.json_register['login']
@@ -37,18 +45,24 @@ class Client:
 
 		msg = self.socket.recv(1024).decode('utf-8')
 
-		if msg == 'User with this login exists. Try another login.':
+		if msg == ' User with this login is already exists.':
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
 			print(msg)
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
 			self.register()
-		elif msg == 'You have been successfully registered!':
+		elif msg == ' You have been successfully registered.':
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
 			print(msg)
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
 			threading.Thread(target=self.msg_recv, daemon=True).start()
 			self.msg_send()
 
 	def login(self):
-		print('|||LOGIN|||')
-		self.json_login['login'] = input('Enter your login: ')
-		self.json_login['password'] = input('Enter your password: ')
+		print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+		print('	     |ᛟ| LOGIN |ᛟ|')
+		print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+		self.json_login['login'] = input('    |ᛟ| Enter your login |ᛟ|: ')
+		self.json_login['password'] = input('    |ᛟ| Enter your password |ᛟ|: ')
 
 		global name
 		name = self.json_login['login']
@@ -58,10 +72,17 @@ class Client:
 
 		msg = self.socket.recv(1024).decode('utf-8')
 
-		if msg:
+		if msg == '  You have been successfully logged in!':
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
 			print(msg)
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
 			threading.Thread(target=self.msg_recv, daemon=True).start()
 			self.msg_send()
+		elif msg == ' Incorrect login of password. Try again.':
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+			print(msg)
+			print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
+			self.login()
 
 	def msg_recv(self):
 		while True:
@@ -76,7 +97,7 @@ class Client:
 	def msg_send(self):
 		while True:
 			try:
-				self.socket.send(bytes(name + ': ' + input(''), 'utf-8'))
+				self.socket.send(bytes('|ᛟ| ' + name + ' |ᛟ|: ' + input(''), 'utf-8'))
 			except:
 				break
 

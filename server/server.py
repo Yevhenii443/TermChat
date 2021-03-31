@@ -26,11 +26,11 @@ class Server:
 		self.event_loop()
 
 	def register_or_login(self, client):
-		client.send(bytes('Register - 1 | Login - 2', 'utf-8'))
+		client.send(bytes('    |ᛟ| REGISTER |ᛟ| ᛟᚱ |ᛟ| LOGIN |ᛟ|', 'utf-8'))
 		msg = client.recv(1024).decode('utf-8')
-		if msg == '1':
+		if msg == 'R':
 			self.register(client)
-		elif msg == '2':
+		elif msg == 'L':
 			self.login(client)
 
 	def register(self, client):
@@ -43,13 +43,13 @@ class Server:
 		cursor.execute('SELECT login FROM TermChat WHERE login = ?', (res['login'], ))
 
 		if cursor.fetchall():
-			client.send(bytes('User with this login exists. Try another login.', 'utf-8'))
+			client.send(bytes(' User with this login is already exists.', 'utf-8'))
 			self.register(client)
 		else:
 			with open('register.json', 'w') as f:
 				json.dump(res, f)
 
-			client.send(bytes('You have been successfully registered!', 'utf-8'))
+			client.send(bytes(' You have been successfully registered.', 'utf-8'))
 			insert_into_db(res)
 			threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
 
@@ -63,10 +63,10 @@ class Server:
 		cursor.execute('SELECT * FROM TermChat WHERE login = ? AND password = ?', (res['login'], res['password']))
 
 		if cursor.fetchall():
-			client.send(bytes('You have been successfully logged in!', 'utf-8'))
+			client.send(bytes('  You have been successfully logged in!', 'utf-8'))
 			threading.Thread(target=self.msg, args=(client, ), daemon=True).start()
 		else:
-			client.send(bytes('Incorrect login of password. Try again.', 'utf-8'))
+			client.send(bytes(' Incorrect login of password. Try again.', 'utf-8'))
 			self.login(client)
 
 	def handle(self, new_socket):
