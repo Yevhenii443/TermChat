@@ -80,7 +80,6 @@ class Server:
 			msg = client.recv(1024).decode('utf-8')
 			if not msg:
 				break
-			print(msg)
 			for i in self.list1:
 				if i != self.socket and i != client:
 					try:
