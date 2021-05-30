@@ -1,4 +1,4 @@
-#TermChat
+<h1>TermChat</h1>
 
 **Hello everybody! This is my first project of the UCode IT Academy course.**
 
