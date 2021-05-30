@@ -8,4 +8,3 @@ def create_db():
             password CHAR)''')
 
     conn.close()
-

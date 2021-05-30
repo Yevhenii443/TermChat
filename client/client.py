@@ -18,8 +18,6 @@ class Client:
 		result = pyfiglet.figlet_format("TermChat", font = "smslant")
 		print(result)
 
-		print('!!! #DO NOT USE CTRL-C WHILE REGISTER OF LOGIN# !!!')
-
 		msg = self.socket.recv(1024).decode('utf-8')
 		print('┝━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┥')
 		print(msg)

@@ -39,7 +39,6 @@ class Server:
 
 		register_validation = sqlite3.connect('TermChat.db')
 		cursor = register_validation.cursor()
-
 		cursor.execute('SELECT login FROM TermChat WHERE login = ?', (res['login'], ))
 
 		if cursor.fetchall():

@@ -14,4 +14,3 @@ def insert_into_db(information):
     
     conn.commit()
     conn.close()
-
