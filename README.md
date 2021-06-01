@@ -15,5 +15,3 @@ The challenge was that we had to make a chat with a team of 5 people. But becaus
 And this is how it looks:
 
 ![This if how TermChat works](https://github.com/Yevhenii443/TermChat/blob/master/.gif/TermChat.gif)
-
-**Thanks for attention!**
